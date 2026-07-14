@@ -6,45 +6,119 @@
   <title>Admin Panel</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Inter',sans-serif;background:#f0f0f0;padding:16px;color:#000}
-    .wrap{max-width:500px;margin:0 auto}
-    h1{font-size:26px;font-weight:900;margin-bottom:2px;letter-spacing:-.5px}
-    .sub{font-size:12px;color:#999;margin-bottom:24px;font-weight:500}
-    
-    .cards{display:grid;grid-template-columns:1fr;gap:14px}
-    .card{display:flex;align-items:center;gap:16px;padding:18px 22px;border-radius:16px;text-decoration:none;color:#fff;cursor:pointer;transition:all .25s;border:none;position:relative;overflow:hidden}
-    .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.15) 0%,transparent 60%);pointer-events:none}
-    .card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.2)}
-    .card:active{transform:translateY(0)}
-    .card .icon-wrap{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);flex-shrink:0;font-size:24px}
-    .card .info{flex:1;min-width:0}
-    .card .info .ttl{font-size:15px;font-weight:800;letter-spacing:-.2px}
-    .card .info .dsc{font-size:11px;opacity:.7;margin-top:1px}
-    .card .badge{background:rgba(255,255,255,.25);border-radius:10px;padding:6px 14px;font-size:13px;font-weight:900;flex-shrink:0;backdrop-filter:blur(4px)}
-    .card-wd{background:linear-gradient(135deg,#1a1a2e,#16213e)} 
-    .card-us{background:linear-gradient(135deg,#0f3460,#16213e)}
+    body{font-family:'Inter',sans-serif;background:#f0f2fe;padding:20px;color:#000;min-height:100vh;background-image:radial-gradient(circle at 10% 20%,rgba(99,102,241,.03) 0%,transparent 50%),radial-gradient(circle at 90% 80%,rgba(168,85,247,.03) 0%,transparent 50%)}
+    .wrap{max-width:440px;margin:40px auto;position:relative}
 
-    .section{background:#fff;border-radius:18px;padding:28px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.06)}
-    .section .big-num{font-size:64px;font-weight:900;line-height:1;margin-bottom:6px;background:linear-gradient(135deg,#0f3460,#1a1a2e);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .section .big-lbl{font-size:14px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px}
-    .section .back-btn{padding:10px 28px;border:none;border-radius:10px;background:#000;color:#fff;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .2s}
-    .section .back-btn:hover{background:#333}
+    .head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px}
+    .head .l h1{font-size:32px;font-weight:900;letter-spacing:-1.2px;line-height:1.05;background:linear-gradient(135deg,#09090b 0%,#3b3b5c 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .head .l .sub{font-size:13px;color:#a1a1aa;font-weight:500;margin-top:6px;letter-spacing:.2px}
+    .head .status{display:flex;align-items:center;gap:8px;background:rgba(99,102,241,.08);padding:8px 16px;border-radius:100px;font-size:11px;font-weight:700;color:#6366f1;letter-spacing:.3px}
+    .head .status .dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.2);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:.7}}
 
-    .login-form{max-width:360px;margin:60px auto;padding:32px 28px;background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
-    .login-form h2{font-size:20px;font-weight:900;margin-bottom:4px}
-    .login-form .sub{font-size:12px;color:#888;margin-bottom:20px}
-    .login-form input{display:block;width:100%;padding:12px 14px;border:2px solid #eee;border-radius:10px;font-size:13px;font-family:inherit;outline:none;margin-bottom:12px;transition:border .2s}
-    .login-form input:focus{border-color:#000}
-    .login-form button{width:100%;padding:12px;border:none;border-radius:10px;background:#000;color:#fff;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;transition:background .2s}
-    .login-form button:hover{background:#333}
-    .login-form .err{font-size:12px;color:#c62828;font-weight:600;margin-top:10px}
+    .cards{display:grid;grid-template-columns:1fr;gap:20px}
 
-    .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:600;z-index:99999;animation:fade .3s}
-    @keyframes fade{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+    .card{display:flex;align-items:center;gap:20px;padding:24px 26px;border-radius:28px;text-decoration:none;color:#fff;cursor:pointer;transition:all .5s cubic-bezier(.34,1.56,.64,1);border:none;position:relative;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.04)}
+    .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1) 0%,transparent 40%,rgba(255,255,255,.04) 100%);pointer-events:none;z-index:1}
+    .card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);pointer-events:none;z-index:1}
+    .card .shimmer{position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.06) 50%,transparent 70%);background-size:200% 100%;animation:shimmer 4s infinite linear;pointer-events:none;z-index:1}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .card .glow{position:absolute;pointer-events:none;z-index:0}
+    .card .glow.g1{width:300px;height:300px;top:-120px;right:-100px;background:radial-gradient(circle,rgba(255,255,255,.08) 0%,transparent 70%)}
+    .card .glow.g2{width:200px;height:200px;bottom:-80px;left:-60px;background:radial-gradient(circle,rgba(255,255,255,.05) 0%,transparent 70%)}
+    .card .glow.g3{width:100px;height:100px;top:50%;left:40%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,255,255,.04) 0%,transparent 70%)}
+    .card .border-glow{position:absolute;inset:-1px;border-radius:29px;background:linear-gradient(135deg,rgba(255,255,255,.2),transparent 50%,rgba(255,255,255,.05));pointer-events:none;z-index:0;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;padding:1px}
+    .card:hover{transform:translateY(-6px) scale(1.02)}
+    .card:active{transform:translateY(-2px) scale(.98)}
+
+    .card .icon-wrap{width:58px;height:58px;border-radius:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:2;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+    .card .icon-wrap svg{position:relative;z-index:1}
+    .card-wd .icon-wrap{background:linear-gradient(135deg,rgba(255,255,255,.25),rgba(255,255,255,.1));backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+    .card-us .icon-wrap{background:linear-gradient(135deg,rgba(255,255,255,.25),rgba(255,255,255,.1));backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+
+    .card .info{flex:1;min-width:0;position:relative;z-index:2}
+    .card .info .ttl{font-size:18px;font-weight:800;letter-spacing:-.4px;text-shadow:0 1px 2px rgba(0,0,0,.1)}
+    .card .info .dsc{font-size:12px;opacity:.55;margin-top:4px;font-weight:500;letter-spacing:.2px;text-shadow:0 1px 2px rgba(0,0,0,.08)}
+    .card .badge{background:rgba(255,255,255,.15);border-radius:16px;padding:10px 20px;font-size:20px;font-weight:900;flex-shrink:0;backdrop-filter:blur(12px);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 4px 12px rgba(0,0,0,.05);letter-spacing:-.8px;position:relative;z-index:2;min-width:52px;text-align:center;border:1px solid rgba(255,255,255,.08)}
+
+    .card-wd{background:linear-gradient(145deg,#1a0033,#2d1b69,#24243e);box-shadow:0 12px 48px rgba(45,27,105,.2)}
+    .card-wd:hover{box-shadow:0 20px 64px rgba(45,27,105,.3)}
+    .card-us{background:linear-gradient(145deg,#001a33,#004080,#1a3a5c);box-shadow:0 12px 48px rgba(0,64,128,.18)}
+    .card-us:hover{box-shadow:0 20px 64px rgba(0,64,128,.28)}
+
+    .card .particle{position:absolute;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.15);pointer-events:none;z-index:0}
+    .card .particle.p1{top:15%;right:25%;width:5px;height:5px;opacity:.2}
+    .card .particle.p2{top:40%;left:15%;width:3px;height:3px;opacity:.15}
+    .card .particle.p3{bottom:20%;right:35%;width:4px;height:4px;opacity:.12}
+
+    .section{background:#fff;border-radius:32px;padding:60px 28px 44px;text-align:center;box-shadow:0 16px 64px rgba(0,0,0,.04);position:relative;overflow:hidden}
+    .section::before{content:'';position:absolute;top:-120px;right:-100px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(45,27,105,.04) 0%,transparent 70%)}
+    .section::after{content:'';position:absolute;bottom:-80px;left:-80px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(0,64,128,.03) 0%,transparent 70%)}
+    .section .big-num{font-size:88px;font-weight:900;line-height:1;margin-bottom:8px;background:linear-gradient(135deg,#2d1b69,#1a0033);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-4px;position:relative;z-index:1}
+    .section .big-lbl{font-size:12px;color:#a1a1aa;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;margin-bottom:36px;position:relative;z-index:1}
+    .section .back-btn{padding:16px 40px;border:none;border-radius:18px;background:linear-gradient(135deg,#2d1b69,#1a0033);color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .4s cubic-bezier(.34,1.56,.64,1);letter-spacing:.3px;position:relative;z-index:1;box-shadow:0 8px 32px rgba(45,27,105,.15)}
+    .section .back-btn:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(45,27,105,.25)}
+
+    .login-form{max-width:380px;margin:60px auto;padding:44px 36px;background:#fff;border-radius:32px;box-shadow:0 16px 64px rgba(0,0,0,.04);position:relative;overflow:hidden}
+    .login-form::before{content:'';position:absolute;top:-120px;right:-120px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(45,27,105,.03) 0%,transparent 70%)}
+    .login-form::after{content:'';position:absolute;bottom:-100px;left:-100px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(0,64,128,.02) 0%,transparent 70%)}
+    .login-form h2{font-size:26px;font-weight:900;margin-bottom:2px;letter-spacing:-1px;background:linear-gradient(135deg,#09090b,#3b3b5c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .login-form .sub{font-size:13px;color:#a1a1aa;margin-bottom:28px;font-weight:500}
+    .login-form input{display:block;width:100%;padding:16px 18px;border:2px solid #e8e8ed;border-radius:18px;font-size:14px;font-family:inherit;outline:none;margin-bottom:16px;transition:all .25s;background:#f8f9fc}
+    .login-form input:focus{border-color:#6366f1;background:#fff;box-shadow:0 0 0 5px rgba(99,102,241,.08)}
+    .login-form button{width:100%;padding:16px;border:none;border-radius:18px;background:linear-gradient(135deg,#2d1b69,#1a0033);color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .4s cubic-bezier(.34,1.56,.64,1);letter-spacing:.3px;position:relative;box-shadow:0 8px 32px rgba(45,27,105,.15)}
+    .login-form button:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(45,27,105,.25)}
+    .login-form .err{font-size:12px;color:#dc2626;font-weight:600;margin-top:16px}
+
+    .bg-shape{position:fixed;z-index:-1;pointer-events:none}
+    .bg-shape.s1{width:400px;height:400px;border-radius:50%;top:-100px;left:-100px;background:radial-gradient(circle,rgba(99,102,241,.04) 0%,transparent 70%)}
+    .bg-shape.s2{width:300px;height:300px;border-radius:50%;bottom:-50px;right:-50px;background:radial-gradient(circle,rgba(168,85,247,.03) 0%,transparent 70%)}
+
+    .search-wrap{background:#fff;border-radius:28px;padding:28px 24px;margin-top:24px;box-shadow:0 4px 20px rgba(0,0,0,.03);position:relative;overflow:hidden}
+    .search-wrap .sh-label{font-size:11px;font-weight:700;color:#a1a1aa;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .search-wrap .sh-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,#e8e8ed,transparent)}
+    .search-row{display:flex;gap:10px}
+    .search-row input{flex:1;padding:14px 16px;border:2px solid #e8e8ed;border-radius:16px;font-size:14px;font-family:inherit;outline:none;transition:all .25s;background:#f8f9fc}
+    .search-row input:focus{border-color:#6366f1;background:#fff;box-shadow:0 0 0 4px rgba(99,102,241,.06)}
+    .search-row button{padding:14px 24px;border:none;border-radius:16px;background:linear-gradient(135deg,#2d1b69,#1a0033);color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .35s;white-space:nowrap}
+    .search-row button:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(45,27,105,.2)}
+    .search-row button:disabled{opacity:.6;cursor:not-allowed;transform:none}
+    .search-row .spinner{display:none;width:20px;height:20px;border:2px solid #e8e8ed;border-top-color:#6366f1;border-radius:50%;animation:spin .6s linear infinite;margin:auto 0}
+    .search-row .spinner.show{display:block}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .search-err{font-size:12px;color:#dc2626;font-weight:600;margin-top:14px;display:none}
+    .search-err.show{display:block}
+    @media(max-width:400px){.search-row{flex-wrap:wrap}.search-row input{width:100%;flex:none}.search-row button{width:100%;padding:12px}}
+    @media(max-width:400px){.user-card .uc-body .f-row{grid-template-columns:1fr}}
+
+    .user-card{background:#fff;border-radius:28px;margin-top:20px;box-shadow:0 8px 32px rgba(0,0,0,.04);overflow:hidden;display:none;position:relative}
+    .user-card.show{display:block}
+    .user-card .uc-head{background:linear-gradient(145deg,#1a0033,#2d1b69,#24243e);padding:22px 26px;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden}
+    .user-card .uc-head::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent)}
+    .user-card .uc-head .uc-avatar{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(255,255,255,.2);flex-shrink:0}
+    .user-card .uc-head .uc-title{color:#fff;font-weight:700;font-size:16px;letter-spacing:-.3px}
+    .user-card .uc-head .uc-sub{color:rgba(255,255,255,.5);font-size:12px;margin-top:2px;font-weight:500}
+    .user-card .uc-body{padding:22px 26px 20px}
+    .user-card .uc-body .f-group{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+    .user-card .uc-body .f-group .f-lbl{font-size:11px;font-weight:700;color:#a1a1aa;text-transform:uppercase;letter-spacing:.8px}
+    .user-card .uc-body .f-group input,.user-card .uc-body .f-group select{padding:12px 14px;border:2px solid #e8e8ed;border-radius:14px;font-size:14px;font-family:inherit;outline:none;transition:all .25s;background:#f8f9fc;width:100%}
+    .user-card .uc-body .f-group input:focus,.user-card .uc-body .f-group select:focus{border-color:#6366f1;background:#fff;box-shadow:0 0 0 4px rgba(99,102,241,.06)}
+    .user-card .uc-body .f-group input:disabled{opacity:.5;background:#f0f0f5}
+    .user-card .uc-body .f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .user-card .uc-body .f-row .f-group{margin-bottom:0}
+    .user-card .uc-body .save-btn{width:100%;padding:14px;border:none;border-radius:16px;background:linear-gradient(135deg,#2d1b69,#1a0033);color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .35s;margin-top:10px}
+    .user-card .uc-body .save-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(45,27,105,.2)}
+    .user-card .uc-body .save-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+    .user-card .uc-body .save-msg{font-size:12px;font-weight:600;margin-top:10px;display:none}
+    .user-card .uc-body .save-msg.ok{color:#16a34a;display:block}
+    .user-card .uc-body .save-msg.err{color:#dc2626;display:block}
   </style>
 </head>
 <body>
+<span class="bg-shape s1"></span>
+<span class="bg-shape s2"></span>
 <div class="wrap" id="adminWrap"></div>
 
 <script>
@@ -52,11 +126,16 @@
   const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZXZqc3Nhdm1jeG5qZmlhZ3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2NjE3OTEsImV4cCI6MjA5OTIzNzc5MX0.9HHdiJx1iYI1F4oNzOJnV3ZZ425A2q090eukj45A5SI';
   const ADMIN_EMAIL = 'support@admeva.online';
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  var userCountCache = 0;
+  var wdCountCache = 0;
 
-  function toast(msg) {
-    var t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
-    document.body.appendChild(t);
-    setTimeout(function() { t.remove() }, 2000);
+  function showUsers(count) {
+    document.getElementById('adminWrap').innerHTML =
+      '<div class="section">' +
+        '<div class="big-num">' + count + '</div>' +
+        '<div class="big-lbl">Total Registered Users</div>' +
+        '<button class="back-btn" onclick="loadDashboard()">Back to Dashboard</button>' +
+      '</div>';
   }
 
   async function checkAuth() {
@@ -89,42 +168,136 @@
     location.reload();
   }
 
-  var userCountCache = 0;
-
-  function showUsers(count) {
-    document.getElementById('adminWrap').innerHTML =
-      '<div class="section">' +
-        '<div class="big-num">' + count + '</div>' +
-        '<div class="big-lbl">Total Registered Users</div>' +
-        '<button class="back-btn" onclick="loadDashboard()">Back to Dashboard</button>' +
-      '</div>';
-  }
-
   async function loadDashboard() {
     if (!await checkAuth()) return;
 
-    // fetch total users count (head:true = no rows, just count)
-    var { count: userCount, error } = await sb.from('users').select('id', { count: 'exact', head: true });
-    if (!error) userCountCache = userCount || 0;
+    var u = await sb.from('users').select('id', { count: 'exact', head: true });
+    if (!u.error) userCountCache = u.count || 0;
+    var w = await sb.from('withdrawals').select('id', { count: 'exact', head: true });
+    if (!w.error) wdCountCache = w.count || 0;
 
     document.getElementById('adminWrap').innerHTML =
-      '<h1>Admin Panel</h1>' +
-      '<div class="sub">Manage your platform</div>' +
-      '<div class="cards" id="mainCards">' +
+      '<div class="head"><div class="l"><h1>Admin Panel</h1><div class="sub">Manage your platform</div></div><div class="status"><span class="dot"></span>Live</div></div>' +
+      '<div class="cards">' +
         '<a class="card card-wd" href="withdrawal/index.html">' +
-          '<div class="icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div>' +
-          '<div class="info"><div class="ttl">Withdrawals</div><div class="dsc">Manage user withdrawal requests</div></div>' +
-          '<div class="badge">View</div>' +
+          '<span class="glow g1"></span><span class="glow g2"></span><span class="glow g3"></span><span class="border-glow"></span><span class="shimmer"></span>' +
+          '<span class="particle p1"></span><span class="particle p2"></span><span class="particle p3"></span>' +
+          '<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div>' +
+          '<div class="info"><div class="ttl">Withdrawals</div><div class="dsc">Manage withdrawal requests</div></div>' +
+          '<div class="badge">' + wdCountCache + '</div>' +
         '</a>' +
         '<div class="card card-us" onclick="showUsers(' + userCountCache + ')">' +
-          '<div class="icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>' +
+          '<span class="glow g1"></span><span class="glow g2"></span><span class="glow g3"></span><span class="border-glow"></span><span class="shimmer"></span>' +
+          '<span class="particle p1"></span><span class="particle p2"></span><span class="particle p3"></span>' +
+          '<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>' +
           '<div class="info"><div class="ttl">Users</div><div class="dsc">Total registered users</div></div>' +
           '<div class="badge">' + userCountCache + '</div>' +
         '</div>' +
-      '</div>';
+      '</div>' +
+      '<div class="search-wrap">' +
+        '<div class="sh-label">Search User</div>' +
+        '<div class="search-row">' +
+          '<input type="email" id="searchEmail" placeholder="Enter full email..." onkeydown="if(event.key===\'Enter\')searchUser()">' +
+          '<button id="searchBtn" onclick="searchUser()">Search</button>' +
+          '<span class="spinner" id="searchSpin"></span>' +
+        '</div>' +
+        '<div class="search-err" id="searchErr"></div>' +
+      '</div>' +
+      '<div class="user-card" id="userCard"></div>';
   }
 
-  loadDashboard();
+  async function searchUser() {
+    var email = document.getElementById('searchEmail').value.trim();
+    var btn = document.getElementById('searchBtn');
+    var spin = document.getElementById('searchSpin');
+    var err = document.getElementById('searchErr');
+    var card = document.getElementById('userCard');
+
+    err.classList.remove('show');
+    err.textContent = '';
+    card.classList.remove('show');
+    card.innerHTML = '';
+
+    if (!email) { err.textContent = 'Please enter an email address.'; err.classList.add('show'); return; }
+
+    btn.style.display = 'none';
+    spin.classList.add('show');
+
+    var { data, error } = await sb.from('users').select('*').eq('email', email).maybeSingle();
+
+    spin.classList.remove('show');
+    btn.style.display = '';
+
+    if (error || !data) {
+      err.textContent = error ? error.message : 'No user found with this email.';
+      err.classList.add('show');
+      return;
+    }
+
+    var u = data;
+    var initial = (u.name || u.email).charAt(0).toUpperCase();
+
+    card.innerHTML =
+      '<div class="uc-head">' +
+        '<div class="uc-avatar">' + initial + '</div>' +
+        '<div><div class="uc-title">' + (u.name || 'Unknown') + '</div><div class="uc-sub">' + u.email + '</div></div>' +
+      '</div>' +
+      '<div class="uc-body">' +
+        '<div class="f-group"><div class="f-lbl">Name</div><input id="uf_name" value="' + esc(u.name || '') + '"></div>' +
+        '<div class="f-row">' +
+          '<div class="f-group"><div class="f-lbl">Balance (₹)</div><input id="uf_balance" type="number" step="0.01" value="' + (u.balance || 0) + '"></div>' +
+          '<div class="f-group"><div class="f-lbl">Total Earned (₹)</div><input id="uf_total_earned" type="number" step="0.01" value="' + (u.total_earned || 0) + '"></div>' +
+        '</div>' +
+        '<div class="f-group"><div class="f-lbl">Referred By</div><input id="uf_referred_by" value="' + esc(u.referred_by || '') + '"></div>' +
+        '<div class="f-row">' +
+          '<div class="f-group"><div class="f-lbl">Referred Paid</div><select id="uf_referred_by_paid"><option value="false"' + (u.referred_by_paid ? '' : ' selected') + '>No</option><option value="true"' + (u.referred_by_paid ? ' selected' : '') + '>Yes</option></select></div>' +
+          '<div class="f-group"><div class="f-lbl">Withdraw 22 Used</div><select id="uf_withdraw22"><option value="false"' + (u.withdraw22_used ? '' : ' selected') + '>No</option><option value="true"' + (u.withdraw22_used ? ' selected' : '') + '>Yes</option></select></div>' +
+        '</div>' +
+        '<div class="f-row">' +
+          '<div class="f-group"><div class="f-lbl">Joined</div><input disabled value="' + (u.joined ? new Date(u.joined).toLocaleDateString() : 'N/A') + '"></div>' +
+          '<div class="f-group"><div class="f-lbl">Fingerprint</div><input disabled value="' + esc((u.fingerprint || '').substring(0, 16) + '...') + '"></div>' +
+        '</div>' +
+        '<button class="save-btn" id="saveUserBtn" onclick="saveUser(\'' + u.email + '\')">Save Changes</button>' +
+        '<div class="save-msg" id="saveMsg"></div>' +
+      '</div>';
+
+    card.classList.add('show');
+  }
+
+  function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  async function saveUser(email) {
+    var btn = document.getElementById('saveUserBtn');
+    var msg = document.getElementById('saveMsg');
+    msg.className = 'save-msg';
+    msg.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    var updates = {
+      name: document.getElementById('uf_name').value.trim(),
+      balance: parseFloat(document.getElementById('uf_balance').value) || 0,
+      total_earned: parseFloat(document.getElementById('uf_total_earned').value) || 0,
+      referred_by: document.getElementById('uf_referred_by').value.trim(),
+      referred_by_paid: document.getElementById('uf_referred_by_paid').value === 'true',
+      withdraw22_used: document.getElementById('uf_withdraw22').value === 'true'
+    };
+
+    var { error } = await sb.from('users').update(updates).eq('email', email);
+
+    btn.disabled = false;
+    btn.textContent = 'Save Changes';
+
+    if (error) {
+      msg.className = 'save-msg err';
+      msg.textContent = 'Error: ' + error.message;
+      return;
+    }
+    msg.className = 'save-msg ok';
+    msg.textContent = 'User updated successfully!';
+  }
+
+  document.addEventListener('DOMContentLoaded', loadDashboard);
 </script>
 </body>
 </html>
