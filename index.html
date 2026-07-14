@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',sans-serif;background:#f0f0f0;padding:16px;color:#000}
+    .wrap{max-width:500px;margin:0 auto}
+    h1{font-size:26px;font-weight:900;margin-bottom:2px;letter-spacing:-.5px}
+    .sub{font-size:12px;color:#999;margin-bottom:24px;font-weight:500}
+    
+    .cards{display:grid;grid-template-columns:1fr;gap:14px}
+    .card{display:flex;align-items:center;gap:16px;padding:18px 22px;border-radius:16px;text-decoration:none;color:#fff;cursor:pointer;transition:all .25s;border:none;position:relative;overflow:hidden}
+    .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.15) 0%,transparent 60%);pointer-events:none}
+    .card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.2)}
+    .card:active{transform:translateY(0)}
+    .card .icon-wrap{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);flex-shrink:0;font-size:24px}
+    .card .info{flex:1;min-width:0}
+    .card .info .ttl{font-size:15px;font-weight:800;letter-spacing:-.2px}
+    .card .info .dsc{font-size:11px;opacity:.7;margin-top:1px}
+    .card .badge{background:rgba(255,255,255,.25);border-radius:10px;padding:6px 14px;font-size:13px;font-weight:900;flex-shrink:0;backdrop-filter:blur(4px)}
+    .card-wd{background:linear-gradient(135deg,#1a1a2e,#16213e)} 
+    .card-us{background:linear-gradient(135deg,#0f3460,#16213e)}
+
+    .section{background:#fff;border-radius:18px;padding:28px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.06)}
+    .section .big-num{font-size:64px;font-weight:900;line-height:1;margin-bottom:6px;background:linear-gradient(135deg,#0f3460,#1a1a2e);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .section .big-lbl{font-size:14px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px}
+    .section .back-btn{padding:10px 28px;border:none;border-radius:10px;background:#000;color:#fff;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .2s}
+    .section .back-btn:hover{background:#333}
+
+    .login-form{max-width:360px;margin:60px auto;padding:32px 28px;background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+    .login-form h2{font-size:20px;font-weight:900;margin-bottom:4px}
+    .login-form .sub{font-size:12px;color:#888;margin-bottom:20px}
+    .login-form input{display:block;width:100%;padding:12px 14px;border:2px solid #eee;border-radius:10px;font-size:13px;font-family:inherit;outline:none;margin-bottom:12px;transition:border .2s}
+    .login-form input:focus{border-color:#000}
+    .login-form button{width:100%;padding:12px;border:none;border-radius:10px;background:#000;color:#fff;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;transition:background .2s}
+    .login-form button:hover{background:#333}
+    .login-form .err{font-size:12px;color:#c62828;font-weight:600;margin-top:10px}
+
+    .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:600;z-index:99999;animation:fade .3s}
+    @keyframes fade{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  </style>
+</head>
+<body>
+<div class="wrap" id="adminWrap"></div>
+
+<script>
+  const SUPABASE_URL = 'https://kievjssavmcxnjfiagso.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZXZqc3Nhdm1jeG5qZmlhZ3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2NjE3OTEsImV4cCI6MjA5OTIzNzc5MX0.9HHdiJx1iYI1F4oNzOJnV3ZZ425A2q090eukj45A5SI';
+  const ADMIN_EMAIL = 'support@admeva.online';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  function toast(msg) {
+    var t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function() { t.remove() }, 2000);
+  }
+
+  async function checkAuth() {
+    var { data: { session } } = await sb.auth.getSession();
+    var email = session ? session.user.email : localStorage.getItem('admeva_session');
+    if (email === ADMIN_EMAIL) { localStorage.setItem('admeva_session', ADMIN_EMAIL); return true; }
+    document.getElementById('adminWrap').innerHTML =
+      '<div class="login-form">' +
+        '<h2>Admin Login</h2>' +
+        '<div class="sub">Sign in to manage platform</div>' +
+        '<input type="email" id="loginEmail" placeholder="Email" value="' + ADMIN_EMAIL + '">' +
+        '<input type="password" id="loginPass" placeholder="Password">' +
+        '<button id="loginBtn" onclick="adminLogin()">Sign In</button>' +
+        '<div class="err" id="loginErr"></div>' +
+      '</div>';
+    return false;
+  }
+
+  async function adminLogin() {
+    var email = document.getElementById('loginEmail').value.trim();
+    var pass = document.getElementById('loginPass').value;
+    var btn = document.getElementById('loginBtn');
+    var err = document.getElementById('loginErr');
+    if (!email || !pass) { err.textContent = 'Enter email and password.'; return; }
+    btn.disabled = true; btn.textContent = 'Signing in...'; err.textContent = '';
+    var { data, error } = await sb.auth.signInWithPassword({ email: email, password: pass });
+    if (error) { err.textContent = error.message; btn.disabled = false; btn.textContent = 'Sign In'; return; }
+    if (email !== ADMIN_EMAIL) { err.textContent = 'Access denied.'; btn.disabled = false; btn.textContent = 'Sign In'; return; }
+    localStorage.setItem('admeva_session', email);
+    location.reload();
+  }
+
+  var userCountCache = 0;
+
+  function showUsers(count) {
+    document.getElementById('adminWrap').innerHTML =
+      '<div class="section">' +
+        '<div class="big-num">' + count + '</div>' +
+        '<div class="big-lbl">Total Registered Users</div>' +
+        '<button class="back-btn" onclick="loadDashboard()">Back to Dashboard</button>' +
+      '</div>';
+  }
+
+  async function loadDashboard() {
+    if (!await checkAuth()) return;
+
+    // fetch total users count (head:true = no rows, just count)
+    var { count: userCount, error } = await sb.from('users').select('id', { count: 'exact', head: true });
+    if (!error) userCountCache = userCount || 0;
+
+    document.getElementById('adminWrap').innerHTML =
+      '<h1>Admin Panel</h1>' +
+      '<div class="sub">Manage your platform</div>' +
+      '<div class="cards" id="mainCards">' +
+        '<a class="card card-wd" href="withdrawal/index.html">' +
+          '<div class="icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div>' +
+          '<div class="info"><div class="ttl">Withdrawals</div><div class="dsc">Manage user withdrawal requests</div></div>' +
+          '<div class="badge">View</div>' +
+        '</a>' +
+        '<div class="card card-us" onclick="showUsers(' + userCountCache + ')">' +
+          '<div class="icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>' +
+          '<div class="info"><div class="ttl">Users</div><div class="dsc">Total registered users</div></div>' +
+          '<div class="badge">' + userCountCache + '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  loadDashboard();
+</script>
+</body>
+</html>
