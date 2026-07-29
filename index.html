@@ -3,149 +3,287 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel</title>
+  <title>Admin – Withdrawals</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Inter',sans-serif;background:#f0f2fe;padding:20px;color:#000;min-height:100vh;background-image:radial-gradient(circle at 10% 20%,rgba(99,102,241,.03) 0%,transparent 50%),radial-gradient(circle at 90% 80%,rgba(168,85,247,.03) 0%,transparent 50%)}
-    .wrap{max-width:440px;margin:40px auto;position:relative}
-
-    .head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px}
-    .head .l h1{font-size:32px;font-weight:900;letter-spacing:-1.2px;line-height:1.05;background:linear-gradient(135deg,#09090b 0%,#3b3b5c 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .head .l .sub{font-size:13px;color:#a1a1aa;font-weight:500;margin-top:6px;letter-spacing:.2px}
-    .head .status{display:flex;align-items:center;gap:8px;background:rgba(99,102,241,.08);padding:8px 16px;border-radius:100px;font-size:11px;font-weight:700;color:#6366f1;letter-spacing:.3px}
-    .head .status .dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.2);animation:pulse 2s infinite}
-    @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:.7}}
-
-    .cards{display:grid;grid-template-columns:1fr;gap:20px}
-
-    .card{display:flex;align-items:center;gap:20px;padding:24px 26px;border-radius:28px;text-decoration:none;color:#fff;cursor:pointer;transition:all .5s cubic-bezier(.34,1.56,.64,1);border:none;position:relative;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.04)}
-    .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1) 0%,transparent 40%,rgba(255,255,255,.04) 100%);pointer-events:none;z-index:1}
-    .card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);pointer-events:none;z-index:1}
-    .card .shimmer{position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.06) 50%,transparent 70%);background-size:200% 100%;animation:shimmer 4s infinite linear;pointer-events:none;z-index:1}
-    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-    .card .glow{position:absolute;pointer-events:none;z-index:0}
-    .card .glow.g1{width:300px;height:300px;top:-120px;right:-100px;background:radial-gradient(circle,rgba(255,255,255,.08) 0%,transparent 70%)}
-    .card .glow.g2{width:200px;height:200px;bottom:-80px;left:-60px;background:radial-gradient(circle,rgba(255,255,255,.05) 0%,transparent 70%)}
-    .card .glow.g3{width:100px;height:100px;top:50%;left:40%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,255,255,.04) 0%,transparent 70%)}
-    .card .border-glow{position:absolute;inset:-1px;border-radius:29px;background:linear-gradient(135deg,rgba(255,255,255,.2),transparent 50%,rgba(255,255,255,.05));pointer-events:none;z-index:0;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;padding:1px}
-    .card:hover{transform:translateY(-6px) scale(1.02)}
-    .card:active{transform:translateY(-2px) scale(.98)}
-
-    .card .icon-wrap{width:58px;height:58px;border-radius:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:2;box-shadow:0 8px 24px rgba(0,0,0,.08)}
-    .card .icon-wrap svg{position:relative;z-index:1}
-    .card-wd .icon-wrap{background:linear-gradient(135deg,rgba(255,255,255,.25),rgba(255,255,255,.1));backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
-    .card-us .icon-wrap{background:linear-gradient(135deg,rgba(255,255,255,.25),rgba(255,255,255,.1));backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
-
-    .card .info{flex:1;min-width:0;position:relative;z-index:2}
-    .card .info .ttl{font-size:18px;font-weight:800;letter-spacing:-.4px;text-shadow:0 1px 2px rgba(0,0,0,.1)}
-    .card .info .dsc{font-size:12px;opacity:.55;margin-top:4px;font-weight:500;letter-spacing:.2px;text-shadow:0 1px 2px rgba(0,0,0,.08)}
-    .card .badge{background:rgba(255,255,255,.15);border-radius:16px;padding:10px 20px;font-size:20px;font-weight:900;flex-shrink:0;backdrop-filter:blur(12px);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 4px 12px rgba(0,0,0,.05);letter-spacing:-.8px;position:relative;z-index:2;min-width:52px;text-align:center;border:1px solid rgba(255,255,255,.08)}
-
-    .card-wd{background:linear-gradient(145deg,#1a0033,#2d1b69,#24243e);box-shadow:0 12px 48px rgba(45,27,105,.2)}
-    .card-wd:hover{box-shadow:0 20px 64px rgba(45,27,105,.3)}
-    .card-us{background:linear-gradient(145deg,#001a33,#004080,#1a3a5c);box-shadow:0 12px 48px rgba(0,64,128,.18)}
-    .card-us:hover{box-shadow:0 20px 64px rgba(0,64,128,.28)}
-
-    .card .particle{position:absolute;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.15);pointer-events:none;z-index:0}
-    .card .particle.p1{top:15%;right:25%;width:5px;height:5px;opacity:.2}
-    .card .particle.p2{top:40%;left:15%;width:3px;height:3px;opacity:.15}
-    .card .particle.p3{bottom:20%;right:35%;width:4px;height:4px;opacity:.12}
-
-    .section{background:#fff;border-radius:32px;padding:60px 28px 44px;text-align:center;box-shadow:0 16px 64px rgba(0,0,0,.04);position:relative;overflow:hidden}
-    .section::before{content:'';position:absolute;top:-120px;right:-100px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(45,27,105,.04) 0%,transparent 70%)}
-    .section::after{content:'';position:absolute;bottom:-80px;left:-80px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(0,64,128,.03) 0%,transparent 70%)}
-    .section .big-num{font-size:88px;font-weight:900;line-height:1;margin-bottom:8px;background:linear-gradient(135deg,#2d1b69,#1a0033);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-4px;position:relative;z-index:1}
-    .section .big-lbl{font-size:12px;color:#a1a1aa;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;margin-bottom:36px;position:relative;z-index:1}
-    .section .back-btn{padding:16px 40px;border:none;border-radius:18px;background:linear-gradient(135deg,#2d1b69,#1a0033);color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .4s cubic-bezier(.34,1.56,.64,1);letter-spacing:.3px;position:relative;z-index:1;box-shadow:0 8px 32px rgba(45,27,105,.15)}
-    .section .back-btn:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(45,27,105,.25)}
-
-    .login-form{max-width:380px;margin:60px auto;padding:44px 36px;background:#fff;border-radius:32px;box-shadow:0 16px 64px rgba(0,0,0,.04);position:relative;overflow:hidden}
-    .login-form::before{content:'';position:absolute;top:-120px;right:-120px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(45,27,105,.03) 0%,transparent 70%)}
-    .login-form::after{content:'';position:absolute;bottom:-100px;left:-100px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(0,64,128,.02) 0%,transparent 70%)}
-    .login-form h2{font-size:26px;font-weight:900;margin-bottom:2px;letter-spacing:-1px;background:linear-gradient(135deg,#09090b,#3b3b5c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .login-form .sub{font-size:13px;color:#a1a1aa;margin-bottom:28px;font-weight:500}
-    .login-form input{display:block;width:100%;padding:16px 18px;border:2px solid #e8e8ed;border-radius:18px;font-size:14px;font-family:inherit;outline:none;margin-bottom:16px;transition:all .25s;background:#f8f9fc}
-    .login-form input:focus{border-color:#6366f1;background:#fff;box-shadow:0 0 0 5px rgba(99,102,241,.08)}
-    .login-form button{width:100%;padding:16px;border:none;border-radius:18px;background:linear-gradient(135deg,#2d1b69,#1a0033);color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .4s cubic-bezier(.34,1.56,.64,1);letter-spacing:.3px;position:relative;box-shadow:0 8px 32px rgba(45,27,105,.15)}
-    .login-form button:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(45,27,105,.25)}
-    .login-form .err{font-size:12px;color:#dc2626;font-weight:600;margin-top:16px}
-
-    .bg-shape{position:fixed;z-index:-1;pointer-events:none}
-    .bg-shape.s1{width:400px;height:400px;border-radius:50%;top:-100px;left:-100px;background:radial-gradient(circle,rgba(99,102,241,.04) 0%,transparent 70%)}
-    .bg-shape.s2{width:300px;height:300px;border-radius:50%;bottom:-50px;right:-50px;background:radial-gradient(circle,rgba(168,85,247,.03) 0%,transparent 70%)}
-
-    .search-wrap{background:#fff;border-radius:28px;padding:28px 24px;margin-top:24px;box-shadow:0 4px 20px rgba(0,0,0,.03);position:relative;overflow:hidden}
-    .search-wrap .sh-label{font-size:11px;font-weight:700;color:#a1a1aa;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-    .search-wrap .sh-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,#e8e8ed,transparent)}
-    .search-row{display:flex;gap:10px}
-    .search-row input{flex:1;padding:14px 16px;border:2px solid #e8e8ed;border-radius:16px;font-size:14px;font-family:inherit;outline:none;transition:all .25s;background:#f8f9fc}
-    .search-row input:focus{border-color:#6366f1;background:#fff;box-shadow:0 0 0 4px rgba(99,102,241,.06)}
-    .search-row button{padding:14px 24px;border:none;border-radius:16px;background:linear-gradient(135deg,#2d1b69,#1a0033);color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .35s;white-space:nowrap}
-    .search-row button:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(45,27,105,.2)}
-    .search-row button:disabled{opacity:.6;cursor:not-allowed;transform:none}
-    .search-row .spinner{display:none;width:20px;height:20px;border:2px solid #e8e8ed;border-top-color:#6366f1;border-radius:50%;animation:spin .6s linear infinite;margin:auto 0}
-    .search-row .spinner.show{display:block}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .search-err{font-size:12px;color:#dc2626;font-weight:600;margin-top:14px;display:none}
-    .search-err.show{display:block}
-    @media(max-width:400px){.search-row{flex-wrap:wrap}.search-row input{width:100%;flex:none}.search-row button{width:100%;padding:12px}}
-    @media(max-width:400px){.user-card .uc-body .f-row{grid-template-columns:1fr}}
-
-    .user-card{background:#fff;border-radius:28px;margin-top:20px;box-shadow:0 8px 32px rgba(0,0,0,.04);overflow:hidden;display:none;position:relative}
-    .user-card.show{display:block}
-    .user-card .uc-head{background:linear-gradient(145deg,#1a0033,#2d1b69,#24243e);padding:22px 26px;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden}
-    .user-card .uc-head::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent)}
-    .user-card .uc-head .uc-avatar{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(255,255,255,.2);flex-shrink:0}
-    .user-card .uc-head .uc-title{color:#fff;font-weight:700;font-size:16px;letter-spacing:-.3px}
-    .user-card .uc-head .uc-sub{color:rgba(255,255,255,.5);font-size:12px;margin-top:2px;font-weight:500}
-    .user-card .uc-body{padding:22px 26px 20px}
-    .user-card .uc-body .f-group{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
-    .user-card .uc-body .f-group .f-lbl{font-size:11px;font-weight:700;color:#a1a1aa;text-transform:uppercase;letter-spacing:.8px}
-    .user-card .uc-body .f-group input,.user-card .uc-body .f-group select{padding:12px 14px;border:2px solid #e8e8ed;border-radius:14px;font-size:14px;font-family:inherit;outline:none;transition:all .25s;background:#f8f9fc;width:100%}
-    .user-card .uc-body .f-group input:focus,.user-card .uc-body .f-group select:focus{border-color:#6366f1;background:#fff;box-shadow:0 0 0 4px rgba(99,102,241,.06)}
-    .user-card .uc-body .f-group input:disabled{opacity:.5;background:#f0f0f5}
-    .user-card .uc-body .f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .user-card .uc-body .f-row .f-group{margin-bottom:0}
-    .user-card .uc-body .save-btn{width:100%;padding:14px;border:none;border-radius:16px;background:linear-gradient(135deg,#2d1b69,#1a0033);color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .35s;margin-top:10px}
-    .user-card .uc-body .save-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(45,27,105,.2)}
-    .user-card .uc-body .save-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
-    .user-card .uc-body .save-msg{font-size:12px;font-weight:600;margin-top:10px;display:none}
-    .user-card .uc-body .save-msg.ok{color:#16a34a;display:block}
-    .user-card .uc-body .save-msg.err{color:#dc2626;display:block}
+    body{font-family:'Inter',sans-serif;background:#f0f0f0;padding:16px;color:#000}
+    .wrap{max-width:800px;margin:0 auto}
+    h1{font-size:22px;font-weight:900;margin-bottom:4px}
+    .sub{font-size:12px;color:#888;margin-bottom:16px}
+    .top-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+    .top-bar .left{display:flex;align-items:center;gap:12px}
+    .top-bar a{color:#888;text-decoration:none;font-size:13px;font-weight:600}
+    .top-bar a:hover{color:#000}
+    .top-bar .refresh{padding:10px 20px;border:none;border-radius:10px;background:#000;color:#fff;font-size:12px;font-weight:700;cursor:pointer}
+    .top-bar .refresh:hover{background:#333}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}
+    .stats .s{background:#fff;border:2px solid #000;padding:14px 10px;text-align:center;border-radius:12px}
+    .stats .s .num{font-size:20px;font-weight:900}
+    .stats .s .lbl{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+    .stats-amount{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+    .stats-amount .s{background:#000;color:#fff;border:2px solid #000;padding:14px 10px;text-align:center;border-radius:12px}
+    .stats-amount .s .num{font-size:18px;font-weight:900}
+    .stats-amount .s .lbl{font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+    .stats-amount .s.sp{background:#e65100;border-color:#e65100}
+    .stats-amount .s.st{background:#2e7d32;border-color:#2e7d32}
+    .stats-amount .s.sr{background:#c62828;border-color:#c62828}
+    .st{color:#2e7d32}
+    .sp{color:#e65100}
+    .sr{color:#c62828}
+    .filters{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+    .filters .fg{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+    .filters .fg .fl{font-size:10px;font-weight:700;text-transform:uppercase;color:#999;letter-spacing:.3px;margin-right:4px}
+    .filters .fbtn{padding:6px 14px;border:2px solid #000;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;transition:all .15s;font-family:inherit}
+    .filters .fbtn:hover{background:#f5f5f5}
+    .filters .fbtn.active{background:#000;color:#fff;border-color:#000}
+    .filters .fbtn.active:hover{background:#222}
+    .filter-toggle{display:block;width:100%;padding:8px 14px;border:2px solid #000;border-radius:10px;background:#fff;font-size:11px;font-weight:700;cursor:pointer;margin-bottom:10px;text-align:left;font-family:inherit;transition:background .15s}
+    .filter-toggle:hover{background:#f5f5f5}
+    .filters{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;overflow:hidden;transition:max-height .3s ease,padding .3s ease,margin .3s ease}
+    .filters.hidden{max-height:0;padding:0;margin:0;border:none}
+    .filters     .view-toggle{display:flex;gap:8px;margin-bottom:12px}
+    .view-toggle .vt{padding:8px 18px;border:2px solid #000;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;font-family:inherit;transition:all .15s}
+    .view-toggle .vt:hover{background:#f5f5f5}
+    .view-toggle .vt.active{background:#000;color:#fff}
+    .usercard{background:#fff;border:2px solid #000;border-radius:14px;padding:18px;cursor:pointer;transition:all .2s}
+    .usercard:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 rgba(0,0,0,.1)}
+    .usercard .uc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+    .usercard .uc-top .uc-email{font-size:13px;font-weight:800;word-break:break-all}
+    .usercard .uc-top .uc-total{font-size:22px;font-weight:900}
+    .usercard .uc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .usercard .uc-stats .uc-s{text-align:center;padding:8px;border-radius:8px;background:#f9f9f9}
+    .usercard .uc-stats .uc-s .uc-num{font-size:16px;font-weight:900}
+    .usercard .uc-stats .uc-s .uc-lbl{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
+    .sep{width:1px;background:#ddd;align-self:stretch;margin:0 4px}
+    .cards{display:grid;grid-template-columns:1fr;gap:14px}
+    .card{background:#fff;border:2px solid #000;border-radius:14px;padding:18px;position:relative}
+    .card.suspicious{border-color:#c62828;background:#fff5f5}
+    .card.suspicious .susp-badge{position:absolute;top:-8px;right:12px;background:#c62828;color:#fff;font-size:9px;font-weight:800;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px}
+    .card .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+    .card .top .user{font-size:15px;font-weight:800}
+    .card .top .user .email{font-size:11px;font-weight:500;color:#888}
+    .card .top .amt{font-size:20px;font-weight:900}
+    .card .info{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;margin-bottom:12px;background:#f9f9f9;border-radius:10px;padding:12px}
+    .card.suspicious .info{background:#fff}
+    .card .info .lbl{color:#999;font-size:10px;text-transform:uppercase;letter-spacing:.3px}
+    .card .info .val{font-weight:600;word-break:break-all}
+    .card .info .copy{cursor:pointer;color:#1565c0;font-weight:700;font-size:11px;margin-left:4px;background:0 0;border:none;font-family:inherit}
+    .card .info .copy:hover{color:#0d47a1}
+    .card .bot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .card .bot .date{font-size:11px;color:#999}
+    .card .bot .actions{display:flex;gap:6px;flex-wrap:wrap}
+    .card .bot .actions select{padding:6px 10px;border:2px solid #000;border-radius:8px;font-size:11px;font-weight:700;font-family:inherit;background:#fff;cursor:pointer;outline:none}
+    .card .bot .actions .save-btn{padding:6px 14px;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;background:#000;color:#fff}
+    .card .bot .actions .save-btn:hover{background:#333}
+    .card .bot .actions .save-btn:disabled{opacity:.4;cursor:default}
+    .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700}
+    .badge.pending{background:#fff3e0;color:#e65100}
+    .badge.completed,.badge.approved{background:#e8f5e9;color:#2e7d32}
+    .badge.rejected{background:#ffebee;color:#c62828}
+    .pagination{display:flex;align-items:center;justify-content:center;gap:6px;padding:14px 0;flex-wrap:wrap}
+    .pagination .page-btn{padding:6px 10px;border:2px solid #000;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;font-family:inherit;text-align:center;line-height:1}
+    .pagination .page-btn:hover{background:#f5f5f5}
+    .pagination .page-btn.prim{background:#000;color:#fff;border-color:#000}
+    .pagination .page-btn:disabled{opacity:.3;cursor:default}
+    .pagination .page-num{font-size:11px;font-weight:700;color:#000;cursor:pointer;padding:4px 8px;border-radius:6px;border:2px solid transparent;min-width:28px;text-align:center;background:0 0;font-family:inherit;line-height:1}
+    .pagination .page-num:hover{border-color:#000}
+    .pagination .page-num-inp{width:50px;padding:4px 6px;border:2px solid #000;border-radius:6px;font-size:11px;font-weight:700;text-align:center;font-family:inherit;outline:none}
+    .empty{padding:60px 20px;text-align:center;color:#999;font-size:14px}
+    .login-form{max-width:360px;margin:60px auto;padding:32px 28px;background:#fff;border:3px solid #000;box-shadow:12px 12px 0 #000}
+    .login-form h2{font-size:20px;font-weight:900;margin-bottom:4px}
+    .login-form .sub{font-size:12px;color:#888;margin-bottom:20px}
+    .login-form input{display:block;width:100%;padding:12px 14px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none;margin-bottom:12px}
+    .login-form input:focus{border-color:#000}
+    .login-form button{width:100%;padding:12px;border:none;border-radius:8px;background:#000;color:#fff;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer}
+    .login-form button:hover{background:#333}
+    .login-form .err{font-size:12px;color:#c62828;font-weight:600;margin-top:10px}
+    .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:600;z-index:99999;animation:fade .3s}
+    @keyframes fade{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+    @media(min-width:600px){.cards{grid-template-columns:repeat(2,1fr)}}
   </style>
 </head>
 <body>
-<span class="bg-shape s1"></span>
-<span class="bg-shape s2"></span>
-<div class="wrap" id="adminWrap"></div>
+<div class="wrap" id="adminWrap">
+  <div class="top-bar">
+    <div class="left"><a href="../index.html">&larr; Back to Admin</a></div>
+    <button class="refresh" onclick="syncFromSupabase(true)">Refresh</button>
+  </div>
+  <h1>Withdrawals</h1>
+  <div class="sub" id="count">Loading...</div>
+  <div class="stats">
+    <div class="s"><div class="num" id="totalAll">-</div><div class="lbl">Total</div></div>
+    <div class="s"><div class="num st" id="totalCompleted">-</div><div class="lbl">Completed</div></div>
+    <div class="s"><div class="num sp" id="totalPending">-</div><div class="lbl">Pending</div></div>
+    <div class="s"><div class="num sr" id="totalRejected">-</div><div class="lbl">Rejected</div></div>
+  </div>
+  <div class="stats-amount">
+    <div class="s"><div class="num" id="totalAmountAll">Rs0</div><div class="lbl">Total Amount</div></div>
+    <div class="s st"><div class="num" id="totalAmountPaid">Rs0</div><div class="lbl">Total Paid</div></div>
+    <div class="s sp"><div class="num" id="totalAmountPending">Rs0</div><div class="lbl">Pending Amount</div></div>
+    <div class="s sr"><div class="num" id="totalAmountRejected">Rs0</div><div class="lbl">Rejected Amount</div></div>
+  </div>
+  <button class="filter-toggle" onclick="toggleFilters()">Filters &#9660;</button>
+  <div class="filters" id="filtersWrap">
+    <div class="fg">
+      <span class="fl">Status</span>
+      <button class="fbtn active" data-group="status" data-val="all" onclick="setFilter('status','all')">All</button>
+      <button class="fbtn" data-group="status" data-val="pending" onclick="setFilter('status','pending')">Pending</button>
+      <button class="fbtn" data-group="status" data-val="completed" onclick="setFilter('status','completed')">Completed</button>
+      <button class="fbtn" data-group="status" data-val="rejected" onclick="setFilter('status','rejected')">Rejected</button>
+    </div>
+    <div class="sep"></div>
+    <div class="fg">
+      <span class="fl">Method</span>
+      <button class="fbtn active" data-group="method" data-val="all" onclick="setFilter('method','all')">All</button>
+      <button class="fbtn" data-group="method" data-val="easypaisa" onclick="setFilter('method','easypaisa')">EasyPaisa</button>
+      <button class="fbtn" data-group="method" data-val="jazzcash" onclick="setFilter('method','jazzcash')">JazzCash</button>
+    </div>
+    <div class="sep"></div>
+    <div class="fg">
+      <span class="fl">Flag</span>
+      <button class="fbtn active" data-group="suspicious" data-val="all" onclick="setFilter('suspicious','all')">All</button>
+      <button class="fbtn" data-group="suspicious" data-val="yes" onclick="setFilter('suspicious','yes')">Suspicious Only</button>
+    </div>
+    <div class="sep"></div>
+    <div class="fg" style="flex:1;min-width:180px">
+      <span class="fl">Search</span>
+      <input type="text" id="searchInput" placeholder="Email or account number..." oninput="searchChange()" style="padding:6px 10px;border:2px solid #000;border-radius:8px;font-size:11px;font-weight:600;font-family:inherit;outline:none;flex:1;min-width:120px;background:#fff">
+    </div>
+    <div class="sep"></div>
+    <div class="fg">
+      <span class="fl">View</span>
+      <button class="fbtn active" data-view="cards" onclick="setView('cards')">Cards</button>
+      <button class="fbtn" data-view="users" onclick="setView('users')">Users</button>
+      <span id="userFilterBadge" style="display:none;font-size:11px;font-weight:600;color:#888;padding:4px 8px;line-height:28px"></span>
+    </div>
+  </div>
+  <div class="pagination" id="paginationTop"></div>
+  <div class="cards" id="list"></div>
+  <div class="pagination" id="paginationBot"></div>
+</div>
 
 <script>
   const SUPABASE_URL = 'https://kievjssavmcxnjfiagso.supabase.co';
   const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZXZqc3Nhdm1jeG5qZmlhZ3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2NjE3OTEsImV4cCI6MjA5OTIzNzc5MX0.9HHdiJx1iYI1F4oNzOJnV3ZZ425A2q090eukj45A5SI';
   const ADMIN_EMAIL = 'support@admeva.online';
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-  var userCountCache = 0;
-  var wdCountCache = 0;
+  var allData = [];
+  var filters = { status: 'all', method: 'all', suspicious: 'all' };
+  var filtersVisible = true;
+  var PER_PAGE = 5;
+  var currentPage = 1;
+  var CACHE_KEY = 'admeva_admin_withdrawals';
+  var currentView = 'cards';
+  var userFilterEmail = null;
+  var searchQuery = '';
 
-  function showUsers(count) {
-    document.getElementById('adminWrap').innerHTML =
-      '<div class="section">' +
-        '<div class="big-num">' + count + '</div>' +
-        '<div class="big-lbl">Total Registered Users</div>' +
-        '<button class="back-btn" onclick="loadDashboard()">Back to Dashboard</button>' +
-      '</div>';
+  function searchChange() {
+    searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+    currentPage = 1;
+    renderCards();
+  }
+
+  function toggleFilters() {
+    filtersVisible = !filtersVisible;
+    document.getElementById('filtersWrap').classList.toggle('hidden', !filtersVisible);
+    document.querySelector('.filter-toggle').innerHTML = 'Filters ' + (filtersVisible ? '\u25BC' : '\u25B6');
+  }
+
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function() { t.remove() }, 2000);
+  }
+
+  function goToPage(p) {
+    if (p < 1) p = 1;
+    if (p > totalPages) p = totalPages;
+    currentPage = p;
+    renderCards();
+  }
+
+  function editPage(el, total) {
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'page-num-inp';
+    inp.value = currentPage;
+    inp.maxLength = 5;
+    el.parentNode.replaceChild(inp, el);
+    inp.focus();
+    inp.select();
+    function done() {
+      var v = parseInt(inp.value, 10);
+      if (v > 0 && v <= total) goToPage(v);
+      renderPagination(total);
+    }
+    inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') done() });
+    inp.addEventListener('blur', done);
+  }
+
+  var totalPages = 1;
+
+  function renderPagination(total) {
+    totalPages = total;
+    var prevDisabled = currentPage <= 1 ? ' disabled' : '';
+    var nextDisabled = currentPage >= total ? ' disabled' : '';
+    var html = '<button class="page-btn" onclick="goToPage(' + (currentPage - 1) + ')"' + prevDisabled + '>&lsaquo;</button>';
+    html += '<span class="page-num" onclick="editPage(this,' + total + ')" title="Click to change page">' + currentPage + '/' + total + '</span>';
+    html += '<button class="page-btn" onclick="goToPage(' + (currentPage + 1) + ')"' + nextDisabled + '>&rsaquo;</button>';
+    document.getElementById('paginationTop').innerHTML = html;
+    document.getElementById('paginationBot').innerHTML = html;
+  }
+
+  function setView(v) {
+    currentView = v;
+    document.querySelectorAll('.fbtn[data-view]').forEach(function(b) { b.classList.toggle('active', b.dataset.view === v) });
+    userFilterEmail = null;
+    document.getElementById('userFilterBadge').style.display = 'none';
+    document.getElementById('userFilterBadge').innerHTML = '';
+    renderCards();
+  }
+
+  function filterByUser(email) {
+    userFilterEmail = email;
+    currentView = 'cards';
+    document.querySelectorAll('.fbtn[data-view]').forEach(function(b) { b.classList.toggle('active', b.dataset.view === 'cards') });
+    document.getElementById('userFilterBadge').innerHTML = 'Showing: ' + email + ' <span onclick="setView(\'users\')" style="cursor:pointer;color:#1565c0;text-decoration:underline;margin-left:4px">Clear</span>';
+    document.getElementById('userFilterBadge').style.display = 'inline';
+    renderCards();
+  }
+
+  function setFilter(group, val) {
+    filters[group] = val;
+    document.querySelectorAll('.fbtn[data-group="' + group + '"]').forEach(function(b) { b.classList.toggle('active', b.dataset.val === val) });
+    currentPage = 1;
+    renderCards();
+  }
+
+  async function updateStatus(id, newStatus, btn) {
+    btn.disabled = true;
+    btn.textContent = '...';
+    var { error } = await sb.from('withdrawals').update({ status: newStatus }).eq('id', id);
+    if (error) { toast('Error: ' + error.message); btn.disabled = false; btn.textContent = 'Save'; return; }
+    // update localStorage without refetching all
+    for (var i = 0; i < allData.length; i++) {
+      if (allData[i].id === id) { allData[i].status = newStatus; break; }
+    }
+    saveCache();
+    toast('Status updated to ' + newStatus);
+    renderCards();
   }
 
   async function checkAuth() {
     var { data: { session } } = await sb.auth.getSession();
     var email = session ? session.user.email : localStorage.getItem('admeva_session');
     if (email === ADMIN_EMAIL) { localStorage.setItem('admeva_session', ADMIN_EMAIL); return true; }
+    // show login form
     document.getElementById('adminWrap').innerHTML =
       '<div class="login-form">' +
         '<h2>Admin Login</h2>' +
-        '<div class="sub">Sign in to manage platform</div>' +
+        '<div class="sub">Sign in with admin account</div>' +
         '<input type="email" id="loginEmail" placeholder="Email" value="' + ADMIN_EMAIL + '">' +
         '<input type="password" id="loginPass" placeholder="Password">' +
         '<button id="loginBtn" onclick="adminLogin()">Sign In</button>' +
@@ -163,141 +301,213 @@
     btn.disabled = true; btn.textContent = 'Signing in...'; err.textContent = '';
     var { data, error } = await sb.auth.signInWithPassword({ email: email, password: pass });
     if (error) { err.textContent = error.message; btn.disabled = false; btn.textContent = 'Sign In'; return; }
-    if (email !== ADMIN_EMAIL) { err.textContent = 'Access denied.'; btn.disabled = false; btn.textContent = 'Sign In'; return; }
+    if (email !== ADMIN_EMAIL) { err.textContent = 'Access denied: Not an admin account.'; btn.disabled = false; btn.textContent = 'Sign In'; return; }
     localStorage.setItem('admeva_session', email);
     location.reload();
   }
 
-  async function loadDashboard() {
+  function renderCards() {
+    // find suspicious account numbers (same acc used by multiple emails)
+    var accMap = {};
+    allData.forEach(function(w) {
+      if (!w.account_number) return;
+      if (!accMap[w.account_number]) accMap[w.account_number] = new Set();
+      accMap[w.account_number].add(w.user_email);
+    });
+    var suspAccs = {};
+    Object.keys(accMap).forEach(function(acc) { if (accMap[acc].size > 1) suspAccs[acc] = true });
+
+    // apply filters
+    var filtered = [];
+    allData.forEach(function(w) {
+      if (userFilterEmail && w.user_email !== userFilterEmail) return;
+      if (filters.status !== 'all') {
+        var st = w.status === 'approved' ? 'completed' : w.status;
+        if (st !== filters.status) return;
+      }
+      if (filters.method !== 'all' && w.method !== filters.method) return;
+      if (filters.suspicious === 'yes' && !(w.account_number && suspAccs[w.account_number])) return;
+      if (searchQuery) {
+        var email = (w.user_email || '').toLowerCase();
+        var acc = (w.account_number || '').toLowerCase();
+        if (email.indexOf(searchQuery) === -1 && acc.indexOf(searchQuery) === -1) return;
+      }
+      filtered.push(w);
+    });
+
+    // ─── USERS VIEW ────────────────────────────────
+    if (currentView === 'users') {
+      // aggregate by user
+      var userMap = {};
+      filtered.forEach(function(w) {
+        if (!userMap[w.user_email]) userMap[w.user_email] = { email: w.user_email, total: 0, completed: 0, pending: 0, rejected: 0, name: w.account_name || '', totalAmount: 0 };
+        var u = userMap[w.user_email];
+        u.total++;
+        u.totalAmount += (w.amount || 0);
+        if (w.status === 'completed' || w.status === 'approved') u.completed++;
+        else if (w.status === 'rejected') u.rejected++;
+        else u.pending++;
+      });
+      var users = Object.keys(userMap).map(function(k) { return userMap[k]; });
+      users.sort(function(a, b) { return b.total - a.total });
+
+      var html = users.map(function(u) {
+        return '<div class="usercard" onclick="filterByUser(\'' + u.email + '\')">' +
+          '<div class="uc-top"><div class="uc-email">' + (u.name ? u.name + '<br><span style="font-size:11px;color:#888;font-weight:500">' + u.email + '</span>' : u.email) + '</div><div class="uc-total">' + u.total + '</div></div>' +
+          '<div class="uc-stats">' +
+            '<div class="uc-s"><div class="uc-num st">' + u.completed + '</div><div class="uc-lbl">Completed</div></div>' +
+            '<div class="uc-s"><div class="uc-num sp">' + u.pending + '</div><div class="uc-lbl">Pending</div></div>' +
+            '<div class="uc-s"><div class="uc-num sr">' + u.rejected + '</div><div class="uc-lbl">Rejected</div></div>' +
+          '</div></div>';
+      }).join('');
+
+      document.getElementById('list').innerHTML = html || '<div class="empty">No users match your filters.</div>';
+      document.getElementById('paginationTop').innerHTML = '';
+      document.getElementById('paginationBot').innerHTML = '';
+      document.getElementById('totalAll').textContent = filtered.length;
+      document.getElementById('totalCompleted').textContent = filtered.filter(function(w) { return w.status === 'completed' || w.status === 'approved' }).length;
+      document.getElementById('totalPending').textContent = filtered.filter(function(w) { return w.status !== 'completed' && w.status !== 'approved' && w.status !== 'rejected' }).length;
+      document.getElementById('totalRejected').textContent = filtered.filter(function(w) { return w.status === 'rejected' }).length;
+      var amtAll = 0, amtPaid = 0, amtPend = 0, amtRej = 0;
+      filtered.forEach(function(w) { var a = w.amount || 0; amtAll += a; if (w.status === 'completed' || w.status === 'approved') amtPaid += a; else if (w.status === 'rejected') amtRej += a; else amtPend += a; });
+      document.getElementById('totalAmountAll').textContent = 'Rs' + amtAll.toLocaleString();
+      document.getElementById('totalAmountPaid').textContent = 'Rs' + amtPaid.toLocaleString();
+      document.getElementById('totalAmountPending').textContent = 'Rs' + amtPend.toLocaleString();
+      document.getElementById('totalAmountRejected').textContent = 'Rs' + amtRej.toLocaleString();
+      return;
+    }
+
+    // ─── CARDS VIEW ────────────────────────────────
+    // per-user stats for card display
+    var userStats = {};
+    filtered.forEach(function(w) {
+      if (!userStats[w.user_email]) userStats[w.user_email] = { total: 0, completed: 0, pending: 0, rejected: 0 };
+      var us = userStats[w.user_email];
+      us.total++;
+      if (w.status === 'completed' || w.status === 'approved') us.completed++;
+      else if (w.status === 'rejected') us.rejected++;
+      else us.pending++;
+    });
+
+    var totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    var start = (currentPage - 1) * PER_PAGE;
+    var pageItems = filtered.slice(start, start + PER_PAGE);
+
+    var stats = { all: filtered.length, completed: 0, pending: 0, rejected: 0 };
+    filtered.forEach(function(w) {
+      if (w.status === 'completed' || w.status === 'approved') stats.completed++;
+      else if (w.status === 'rejected') stats.rejected++;
+      else stats.pending++;
+    });
+
+    var cards = '';
+    pageItems.forEach(function(w) {
+      var isSusp = w.account_number && suspAccs[w.account_number];
+      var date = w.created_at ? new Date(w.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+      var methodName = { easypaisa: 'EasyPaisa', jazzcash: 'JazzCash' }[w.method] || w.method || '-';
+      var statusClass = w.status === 'completed' || w.status === 'approved' ? 'completed' : w.status === 'rejected' ? 'rejected' : 'pending';
+      var statusLabel = w.status === 'approved' ? 'completed' : w.status;
+      var statusOpts = '<option value="pending"' + (w.status === 'pending' ? ' selected' : '') + '>Pending</option><option value="completed"' + (w.status === 'completed' || w.status === 'approved' ? ' selected' : '') + '>Completed</option><option value="rejected"' + (w.status === 'rejected' ? ' selected' : '') + '>Rejected</option>';
+
+      var us = userStats[w.user_email] || { total: 0, completed: 0, pending: 0, rejected: 0 };
+      var userStatLine = '<div style="font-size:10px;color:#999;border-top:1px solid #eee;margin-top:8px;padding-top:8px;display:flex;gap:10px">' +
+        '<span><strong>' + us.total + '</strong> Total</span>' +
+        '<span style="color:#2e7d32"><strong>' + us.completed + '</strong> Done</span>' +
+        '<span style="color:#e65100"><strong>' + us.pending + '</strong> Pending</span>' +
+        '<span style="color:#c62828"><strong>' + us.rejected + '</strong> Rejected</span></div>';
+
+      cards += '<div class="card' + (isSusp ? ' suspicious' : '') + '" data-id="' + w.id + '">' +
+        (isSusp ? '<span class="susp-badge">Suspicious</span>' : '') +
+        '<div class="top"><div class="user">' + (w.account_name || '-') + '<div class="email">' + (w.user_email || '') + '</div></div><div class="amt">Rs' + (w.amount || 0) + '</div></div>' +
+        '<div class="info">' +
+          '<div><div class="lbl">Method</div><div class="val">' + methodName + '</div></div>' +
+          '<div><div class="lbl">Account Number</div><div class="val">' + (w.account_number || '-') + ' <button class="copy" onclick="var t=this;navigator.clipboard?navigator.clipboard.writeText(\'' + (w.account_number || '') + '\').then(function(){toast(\'Copied!\')}):(function(){var e=document.createElement(\'textarea\');e.value=\'' + (w.account_number || '') + '\';document.body.appendChild(e);e.select();document.execCommand(\'copy\');e.remove();toast(\'Copied!\')})()">Copy</button></div></div>' +
+        '</div>' +
+        userStatLine +
+        '<div class="bot"><div><span class="badge ' + statusClass + '">' + statusLabel + '</span><div class="date">' + date + '</div></div>' +
+        '<div class="actions"><select id="sel-' + w.id + '">' + statusOpts + '</select><button class="save-btn" onclick="updateStatus(\'' + w.id + '\',document.getElementById(\'sel-' + w.id + '\').value,this)">Save</button></div></div></div>';
+    });
+
+    document.getElementById('list').innerHTML = cards || '<div class="empty">No withdrawals match your filters.</div>';
+    document.getElementById('totalAll').textContent = stats.all;
+    document.getElementById('totalCompleted').textContent = stats.completed;
+    document.getElementById('totalPending').textContent = stats.pending;
+    document.getElementById('totalRejected').textContent = stats.rejected;
+    var amtAll = 0, amtPaid = 0, amtPend = 0, amtRej = 0;
+    filtered.forEach(function(w) { var a = w.amount || 0; amtAll += a; if (w.status === 'completed' || w.status === 'approved') amtPaid += a; else if (w.status === 'rejected') amtRej += a; else amtPend += a; });
+    document.getElementById('totalAmountAll').textContent = 'Rs' + amtAll.toLocaleString();
+    document.getElementById('totalAmountPaid').textContent = 'Rs' + amtPaid.toLocaleString();
+    document.getElementById('totalAmountPending').textContent = 'Rs' + amtPend.toLocaleString();
+    document.getElementById('totalAmountRejected').textContent = 'Rs' + amtRej.toLocaleString();
+    renderPagination(totalPages);
+  }
+
+  var lastCreatedAt = null;
+
+  function saveCache() {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(allData));
+      if (lastCreatedAt) localStorage.setItem(CACHE_KEY + '_last', lastCreatedAt);
+    } catch(e) {}
+  }
+  function loadCache() {
+    try {
+      var d = localStorage.getItem(CACHE_KEY);
+      if (d) { allData = JSON.parse(d); lastCreatedAt = localStorage.getItem(CACHE_KEY + '_last') || null; return true; }
+    } catch(e) {}
+    return false;
+  }
+
+  function findLastCreatedAt(arr) {
+    var max = null;
+    arr.forEach(function(w) { if (w.created_at && (!max || w.created_at > max)) max = w.created_at; });
+    return max;
+  }
+
+  async function syncFromSupabase(isRefresh) {
+    var q = sb.from('withdrawals')
+      .select('id,user_email,amount,method,account_name,account_number,status,created_at');
+    if (isRefresh && lastCreatedAt) {
+      q = q.gt('created_at', lastCreatedAt);
+    }
+    q = q.order('created_at', { ascending: false });
+    var { data, error } = await q;
+    if (error) return;
+    if (isRefresh && lastCreatedAt) {
+      // only new ones — prepend, never replace existing
+      if (data && data.length > 0) {
+        var existingIds = {};
+        allData.forEach(function(w) { existingIds[w.id] = true; });
+        data.forEach(function(w) {
+          if (!existingIds[w.id]) { allData.unshift(w); }
+        });
+        lastCreatedAt = findLastCreatedAt(allData);
+      }
+      // if no new data, allData stays untouched
+    } else {
+      allData = data || [];
+      lastCreatedAt = findLastCreatedAt(allData);
+    }
+    saveCache();
+    renderCards();
+  }
+
+  async function loadData() {
     if (!await checkAuth()) return;
-
-    var u = await sb.from('users').select('id', { count: 'exact', head: true });
-    if (!u.error) userCountCache = u.count || 0;
-    var w = await sb.from('withdrawals').select('id', { count: 'exact', head: true });
-    if (!w.error) wdCountCache = w.count || 0;
-
-    document.getElementById('adminWrap').innerHTML =
-      '<div class="head"><div class="l"><h1>Admin Panel</h1><div class="sub">Manage your platform</div></div><div class="status"><span class="dot"></span>Live</div></div>' +
-      '<div class="cards">' +
-        '<a class="card card-wd" href="withdrawal/index.html">' +
-          '<span class="glow g1"></span><span class="glow g2"></span><span class="glow g3"></span><span class="border-glow"></span><span class="shimmer"></span>' +
-          '<span class="particle p1"></span><span class="particle p2"></span><span class="particle p3"></span>' +
-          '<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div>' +
-          '<div class="info"><div class="ttl">Withdrawals</div><div class="dsc">Manage withdrawal requests</div></div>' +
-          '<div class="badge">' + wdCountCache + '</div>' +
-        '</a>' +
-        '<div class="card card-us" onclick="showUsers(' + userCountCache + ')">' +
-          '<span class="glow g1"></span><span class="glow g2"></span><span class="glow g3"></span><span class="border-glow"></span><span class="shimmer"></span>' +
-          '<span class="particle p1"></span><span class="particle p2"></span><span class="particle p3"></span>' +
-          '<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>' +
-          '<div class="info"><div class="ttl">Users</div><div class="dsc">Total registered users</div></div>' +
-          '<div class="badge">' + userCountCache + '</div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="search-wrap">' +
-        '<div class="sh-label">Search User</div>' +
-        '<div class="search-row">' +
-          '<input type="email" id="searchEmail" placeholder="Enter full email..." onkeydown="if(event.key===\'Enter\')searchUser()">' +
-          '<button id="searchBtn" onclick="searchUser()">Search</button>' +
-          '<span class="spinner" id="searchSpin"></span>' +
-        '</div>' +
-        '<div class="search-err" id="searchErr"></div>' +
-      '</div>' +
-      '<div class="user-card" id="userCard"></div>';
-  }
-
-  async function searchUser() {
-    var email = document.getElementById('searchEmail').value.trim();
-    var btn = document.getElementById('searchBtn');
-    var spin = document.getElementById('searchSpin');
-    var err = document.getElementById('searchErr');
-    var card = document.getElementById('userCard');
-
-    err.classList.remove('show');
-    err.textContent = '';
-    card.classList.remove('show');
-    card.innerHTML = '';
-
-    if (!email) { err.textContent = 'Please enter an email address.'; err.classList.add('show'); return; }
-
-    btn.style.display = 'none';
-    spin.classList.add('show');
-
-    var { data, error } = await sb.from('users').select('*').eq('email', email).maybeSingle();
-
-    spin.classList.remove('show');
-    btn.style.display = '';
-
-    if (error || !data) {
-      err.textContent = error ? error.message : 'No user found with this email.';
-      err.classList.add('show');
-      return;
+    // show cached immediately
+    if (loadCache()) {
+      document.getElementById('count').textContent = allData.length + ' withdrawal' + (allData.length === 1 ? '' : 's') + ' (cached)';
+      renderCards();
+    } else {
+      document.getElementById('count').textContent = 'Loading...';
     }
-
-    var u = data;
-    var initial = (u.name || u.email).charAt(0).toUpperCase();
-
-    card.innerHTML =
-      '<div class="uc-head">' +
-        '<div class="uc-avatar">' + initial + '</div>' +
-        '<div><div class="uc-title">' + (u.name || 'Unknown') + '</div><div class="uc-sub">' + u.email + '</div></div>' +
-      '</div>' +
-      '<div class="uc-body">' +
-        '<div class="f-group"><div class="f-lbl">Name</div><input id="uf_name" value="' + esc(u.name || '') + '"></div>' +
-        '<div class="f-row">' +
-          '<div class="f-group"><div class="f-lbl">Balance (₹)</div><input id="uf_balance" type="number" step="0.01" value="' + (u.balance || 0) + '"></div>' +
-          '<div class="f-group"><div class="f-lbl">Total Earned (₹)</div><input id="uf_total_earned" type="number" step="0.01" value="' + (u.total_earned || 0) + '"></div>' +
-        '</div>' +
-        '<div class="f-group"><div class="f-lbl">Referred By</div><input id="uf_referred_by" value="' + esc(u.referred_by || '') + '"></div>' +
-        '<div class="f-row">' +
-          '<div class="f-group"><div class="f-lbl">Referred Paid</div><select id="uf_referred_by_paid"><option value="false"' + (u.referred_by_paid ? '' : ' selected') + '>No</option><option value="true"' + (u.referred_by_paid ? ' selected' : '') + '>Yes</option></select></div>' +
-          '<div class="f-group"><div class="f-lbl">Withdraw 22 Used</div><select id="uf_withdraw22"><option value="false"' + (u.withdraw22_used ? '' : ' selected') + '>No</option><option value="true"' + (u.withdraw22_used ? ' selected' : '') + '>Yes</option></select></div>' +
-        '</div>' +
-        '<div class="f-row">' +
-          '<div class="f-group"><div class="f-lbl">Joined</div><input disabled value="' + (u.joined ? new Date(u.joined).toLocaleDateString() : 'N/A') + '"></div>' +
-          '<div class="f-group"><div class="f-lbl">Fingerprint</div><input disabled value="' + esc((u.fingerprint || '').substring(0, 16) + '...') + '"></div>' +
-        '</div>' +
-        '<button class="save-btn" id="saveUserBtn" onclick="saveUser(\'' + u.email + '\')">Save Changes</button>' +
-        '<div class="save-msg" id="saveMsg"></div>' +
-      '</div>';
-
-    card.classList.add('show');
+    // background sync — on first load, fetch ALL
+    await syncFromSupabase(false);
+    document.getElementById('count').textContent = allData.length + ' withdrawal' + (allData.length === 1 ? '' : 's');
   }
 
-  function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-  async function saveUser(email) {
-    var btn = document.getElementById('saveUserBtn');
-    var msg = document.getElementById('saveMsg');
-    msg.className = 'save-msg';
-    msg.textContent = '';
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
-
-    var updates = {
-      name: document.getElementById('uf_name').value.trim(),
-      balance: parseFloat(document.getElementById('uf_balance').value) || 0,
-      total_earned: parseFloat(document.getElementById('uf_total_earned').value) || 0,
-      referred_by: document.getElementById('uf_referred_by').value.trim(),
-      referred_by_paid: document.getElementById('uf_referred_by_paid').value === 'true',
-      withdraw22_used: document.getElementById('uf_withdraw22').value === 'true'
-    };
-
-    var { error } = await sb.from('users').update(updates).eq('email', email);
-
-    btn.disabled = false;
-    btn.textContent = 'Save Changes';
-
-    if (error) {
-      msg.className = 'save-msg err';
-      msg.textContent = 'Error: ' + error.message;
-      return;
-    }
-    msg.className = 'save-msg ok';
-    msg.textContent = 'User updated successfully!';
-  }
-
-  document.addEventListener('DOMContentLoaded', loadDashboard);
+  loadData();
 </script>
 </body>
 </html>
